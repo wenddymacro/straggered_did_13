@@ -1,4 +1,4 @@
-# straggered_did_13
+# straggered_did_16
 Thirteen DID estimators using simulated data
 
 The folder contains a Stata project that uses a simulated dataset and produces event studies plots using TWFE OLS and the recently developed estimators `csdid`, `did2s`, `eventstudyinteract`, `did_multiplegt`, `did_imputation`, and `stackedev`,`drdid`, `flexpaneldid`, `xtevent`, `eventdd`, `staggered`, `jwdid`, `wooldid`,`lpdid`, `fect`, `sdid` . For further details on these estimators and related packages see this [page](https://github.com/asjadnaqvi/Diff-in-Diff-Notes/blob/main/README.md) by [Asjad Naqvi](https://asjadnaqvi.github.io)[<img width="12px" src="https://cdn.jsdelivr.net/npm/simple-icons@v5/icons/twitter.svg"/>](https://twitter.com/asjadnaqvi).
