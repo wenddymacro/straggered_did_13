@@ -1,5 +1,5 @@
 *********************************************
-* Thirteen new DID estimators 
+* Fourteen new DID estimators 
 * 1. Simulated data  
 *********************************************
 // Generate a complete panel of 400 units observed in 15 periods
@@ -13,7 +13,7 @@
 	set obs `=$I*$T'
 	gen i = int((_n-1)/$T )+1 		// unit id
 	gen t = mod((_n-1),$T )+1		// calendar period
-	tsset i t
+	xtset i t
 
 	
 // Randomly generate treatment rollout periods uniformly across Ei=10..16
@@ -33,7 +33,7 @@
 // Generate the outcome with parallel trends and heterogeneous treatment effects
 
 	*Heterogeneous treatment effects (in this case vary over calendar periods)
-	gen tau = cond(D==1, (t-12.5), 0)
+	gen tau = cond(D==1, (t-Ei), 0)
 	
 	*Error term
 	gen eps = rnormal()
@@ -106,7 +106,7 @@
 	matrix dcdh_v = e(variances)
 
 ***********************************************************************************************
-// （3）csdid of Callaway and Sant'Anna (2020) (v1.6 written by Fernando Rios-Avila @friosavila)
+// （3）csdid of Callaway and Sant'Anna (2021) (v1.6 written by Fernando Rios-Avila @friosavila)
 ***********************************************************************************************
 	*Preparation
 	gen gvar = cond(Ei>15, 0, Ei) // group variable as required for the csdid command
@@ -136,7 +136,7 @@
 
 	*Plotting
 	event_plot e(b)#e(V), default_look graph_opt(xtitle("Periods since the event") ///
-		ytitle("Average causal effect") xlabel(-14(1)5) title("Callaway and Sant'Anna (2020)") name(CS, replace)) ///
+		ytitle("Average causal effect") xlabel(-13(1)5) title("Callaway and Sant'Anna (2021)") name(CS, replace)) ///
 		stub_lag(T+#) stub_lead(T-#) together
 
 	*Storing estimates for later
@@ -324,7 +324,7 @@
 //     outcomemissing                disables a check if depvar is observable for the defined outcome development period
 
 
- * flexpaneldid Y, id(i) treatment(D) time(t)
+flexpaneldid Y, id(i) treatment(D) time(t)
 
 
 
@@ -400,7 +400,7 @@
 **********************************************************************	
 // （13）Jeff Wooldridge  (2021). Two-Way Fixed Effects, the Two-Way Mundlak Regression, and Difference-in-Differences Estimators
 **********************************************************************	
-//Syntax： 	jwdid  lemp , i(countyreal) t(year) gvar(first_treat)
+//（13-1）Syntax： 	jwdid  lemp , i(countyreal) t(year) gvar(first_treat)
 
    jwdid Y，i(i) t(t) gvar(Ei)
    
@@ -416,6 +416,40 @@
 	}
 
 
+//（13-2）Syntax：wooldid y i t ttre [if] [aw/pw=weights]
+
+wooldid Y i t Ei, cluster(i) makeplots espre(4) espost(4)
+	
+	
+**********************************************************************	
+// （14）Dube, A., D. Girardi, Ò. Jordà and A. M. Taylor. 2023.  "A Local Projections Approach to Difference-in-Differences Event Studies." NBER Working Paper 31184.
+
+**********************************************************************	
+//Syntax：lpdid depvar [if] [in], unit(varname) time(varname) treat(varname) pre_window(integer) post_window(integer) [ options ]
+
+lpdid Y, treat(D) unit(i) time(t) pre(4) post(4)	
+
+
+
+**********************************************************************	
+// （15）Arkhangelsky, Dmitry, Susan Athey, David A. Hirshberg, Guido W. Imbens, and Stefan Wager. 2021. "Synthetic Difference-in-Differences." American Economic Review, 111 (12): 4088-4118.
+
+**********************************************************************	
+//Syntax：sdid depvar groupvar timevar treatment [if] [in], vce(vcetype) [options]
+
+sdid Y i t D, vce(bootstrap) seed(1000) graph	
+	
+**********************************************************************	
+// （16）Athey, Susan, Mohsen Bayati, Nikolay Doudchenko, Guido Imbens, and Khashayar Khosravi. 2021. "Matrix completion methods for causal panel data models." Journal of the American Statistical Association 116(536): 1716–30.
+// Licheng Liu, Ye Wang, Yiqing Xu,2022. A Practical Guide to Counterfactual Estimators for Causal Inference with Time-Series Cross-Sectional Data,American Journal of Political Science
+
+**********************************************************************	
+//Syntax：fect outcome [if] ,treat(varname) unit(varname) time(varname) [options]
+
+fect Y ,treat(D) unit(i) time(t) method("mc") lambda(0.004)
+fect Y ,treat(D) unit(i) time(t) method("ife") force("two-way") r(2)
+	
+	
 // Combine all plots using the stored estimates (5 leads and lags around event)
 
 event_plot btrue# bjs dcdh_b#dcdh_v cs_b#cs_v sa_b#sa_v did2s_b#did2s_v stackedev_b#stackedev_v ols, ///
